@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Patitas Felices — Presentación Interactiva</title>
+<style>
+:root{
+  --green:#4A6B53; --coral:#E76F51; --cream:#F9F6F0; --card:#EFECE6;
+  --dark:#2c3e35; --ide:#1e1e2e; --ide2:#282a3a; --yellow:#f1c40f;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--cream);color:var(--dark)}
+
+/* ---------- DECK ENGINE ---------- */
+#deck{position:fixed;inset:0}
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:4vh 5vw;opacity:0;visibility:hidden;transform:scale(.96);
+  transition:opacity .6s ease,transform .6s ease,visibility .6s;overflow:hidden}
+.scene.active{opacity:1;visibility:visible;transform:scale(1);z-index:2}
+.scene.paws-bg{background-image:radial-gradient(rgba(74,107,83,.07) 1.5px,transparent 1.6px);background-size:42px 42px}
+
+/* scene entrance animations */
+.scene.active .anim-up{animation:up .7s cubic-bezier(.2,.9,.3,1.2) both}
+.scene.active .d1{animation-delay:.15s}.scene.active .d2{animation-delay:.35s}
+.scene.active .d3{animation-delay:.55s}.scene.active .d4{animation-delay:.75s}
+.scene.active .d5{animation-delay:.95s}.scene.active .d6{animation-delay:1.15s}
+.scene.active .d7{animation-delay:1.35s}.scene.active .d8{animation-delay:1.55s}
+@keyframes up{from{opacity:0;transform:translateY(40px)}to{opacity:1;transform:translateY(0)}}
+
+.kicker{display:inline-block;font-weight:700;letter-spacing:2px;font-size:.8rem;color:var(--coral);
+  text-transform:uppercase;margin-bottom:.6rem}
+h1.big{font-size:clamp(1.8rem,4.5vw,3.4rem);line-height:1.1;color:var(--dark)}
+h1.big .hl{color:var(--green)}
+.sub{font-size:clamp(.9rem,1.4vw,1.15rem);color:#666;max-width:640px;text-align:center;margin-top:.8rem}
+
+/* ---------- NAV ---------- */
+#dots{position:fixed;right:14px;top:50%;transform:translateY(-50%);z-index:50;display:flex;flex-direction:column;gap:8px}
+#dots button{width:10px;height:10px;border-radius:50%;border:2px solid var(--green);background:transparent;cursor:pointer;transition:.3s;padding:0}
+#dots button.on{background:var(--coral);border-color:var(--coral);transform:scale(1.3)}
+.arrow{position:fixed;top:50%;transform:translateY(-50%);z-index:50;background:#fff;border:none;
+  width:46px;height:46px;border-radius:50%;font-size:1.3rem;color:var(--green);cursor:pointer;
+  box-shadow:0 4px 14px rgba(0,0,0,.15);transition:.3s}
+.arrow:hover{background:var(--green);color:#fff}
+#prev{left:14px}#next{right:40px}
+#counter{position:fixed;left:16px;bottom:14px;z-index:50;font-size:.75rem;color:#888;letter-spacing:1px}
+.progress{position:fixed;left:0;top:0;height:4px;background:linear-gradient(90deg,var(--green),var(--coral));z-index:60;transition:width .5s ease}
+
+/* ---------- SCENE 1 : dog walk + typewriter ---------- */
+#sc1 .track{position:relative;width:100%;height:60vh;display:flex;align-items:center;justify-content:center}
+.walker{position:absolute;font-size:5.5rem;animation:walk 7s linear infinite}
+@keyframes walk{0%{left:-12%;transform:scaleX(1)}100%{left:105%;transform:scaleX(1)}}
+.paw{position:absolute;font-size:1.2rem;opacity:0;animation:pawfade 7s linear infinite}
+@keyframes pawfade{0%,8%{opacity:0}12%{opacity:.55}80%{opacity:.55}95%,100%{opacity:0}}
+.type{min-height:1.3em}
+.type::after{content:'▌';color:var(--coral);animation:blink .8s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.scene.active .type{animation:typing 2.6s steps(30) .8s both;overflow:hidden;white-space:nowrap;
+  border-right:none;width:0}
+@keyframes typing{from{width:0}to{width:100%}}
+
+/* ---------- DEVICE MOCKUPS ---------- */
+.dev{background:#fff;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.18);overflow:hidden;position:relative}
+.dev-bar{height:22px;background:#e8e4dc;display:flex;gap:5px;align-items:center;padding:0 10px}
+.dev-bar i{width:8px;height:8px;border-radius:50%;background:#c9c3b8}
+.dev-screen{background:var(--cream);padding:12px;font-size:.6rem;line-height:1.35;color:#555;overflow:hidden}
+.desktop{width:min(560px,60vw)}
+.desktop .dev-screen{height:min(300px,38vh)}
+.mobile{width:200px}
+.mobile .dev-screen{height:min(340px,42vh)}
+.mini-hero{background:linear-gradient(135deg,var(--green),#5d8567);border-radius:8px;color:#fff;padding:14px;margin-bottom:8px}
+.mini-hero b{font-size:.85rem}
+.mini-hero .tag{font-size:.5rem;letter-spacing:1px;opacity:.85;display:block;margin-bottom:4px}
+.mini-hero .btn{display:inline-block;background:var(--coral);color:#fff;border-radius:5px;padding:3px 9px;font-size:.55rem;margin-top:6px}
+.mini-grid{display:grid;gap:6px}
+.mini-grid.m4{grid-template-columns:repeat(4,1fr)}
+.mini-grid.m2{grid-template-columns:repeat(2,1fr)}
+.mini-grid.m1{grid-template-columns:1fr}
+.petcard{background:#fff;border-radius:6px;padding:5px;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.08)}
+.petcard .emo{font-size:1.1rem}
+.petcard span{display:block;font-size:.48rem;color:var(--coral);font-weight:600}
+.orbit-card{position:absolute;background:#fff;border-radius:10px;padding:8px 14px;font-size:.75rem;font-weight:600;
+  color:var(--green);box-shadow:0 8px 22px rgba(0,0,0,.14)}
+.scene.active .orbit-card{animation:up .7s cubic-bezier(.2,.9,.3,1.4) both,floaty 3.5s ease-in-out infinite alternate}
+@keyframes floaty{from{transform:translateY(-4px)}to{transform:translateY(4px)}}
+
+/* morph stage */
+.morph-stage{position:relative;height:min(380px,46vh);width:min(560px,80vw);display:flex;align-items:center;justify-content:center}
+.morphbox{background:#fff;border-radius:14px;box-shadow:0 18px 50px rgba(0,0,0,.2);overflow:hidden;position:relative;
+  transition:width 1.4s cubic-bezier(.7,0,.2,1),height 1.4s cubic-bezier(.7,0,.2,1)}
+.scene.active .morphbox{width:min(540px,70vw);height:min(340px,42vh)}
+.scene.active .morphbox.toMobile{width:210px;height:min(380px,46vh)}
+.laser{position:absolute;top:0;bottom:0;width:3px;background:linear-gradient(var(--coral),transparent);
+  opacity:0;transition:opacity .5s}
+.scene.active .laser{animation:sweep 2.8s ease .5s both}
+@keyframes sweep{0%{opacity:0;left:0}15%{opacity:1}85%{opacity:1}100%{opacity:0;left:100%}}
+
+/* ---------- IDE ---------- */
+.ide{width:min(880px,86vw);border-radius:12px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.35);background:var(--ide)}
+.ide-head{background:var(--ide2);padding:9px 14px;display:flex;gap:6px;align-items:center;color:#8b8fa3;font-size:.75rem}
+.ide-head i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.ide-body{display:grid;grid-template-columns:1.35fr 1fr;min-height:min(320px,42vh)}
+.ide code{display:block;padding:16px;font-family:'Consolas','Fira Code',monospace;font-size:clamp(.6rem,1.15vw,.85rem);
+  line-height:1.75;color:#cdd3e0;white-space:pre;overflow:hidden}
+.tok-k{color:#c792ea}.tok-s{color:#c3e88d}.tok-p{color:#82aaff}.tok-n{color:#f78c6c}.tok-c{color:#676e95}.tok-t{color:#89ddff}
+.code-typer{overflow:hidden}
+.scene.active .code-typer{animation:codein 3.2s steps(24) .4s both}
+@keyframes codein{from{width:0}to{width:100%}}
+.ide-preview{background:var(--cream);display:flex;align-items:center;justify-content:center;position:relative;border-left:2px solid #33344a}
+.preview-frame{width:80%;height:70%;border-radius:10px;position:relative;overflow:hidden;background:#ddd}
+.pv{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:3rem;opacity:0}
+.scene.active .pv1{animation:pvA 6s linear .5s infinite}
+.scene.active .pv2{animation:pvA 6s linear 2.5s infinite}
+.scene.active .pv3{animation:pvA 6s linear 4.5s infinite}
+@keyframes pvA{0%{opacity:0}8%{opacity:1}30%{opacity:1}38%,100%{opacity:0}}
+
+/* ---------- SCENE 5 sprite ---------- */
+.strip-wrap{display:flex;gap:14px;align-items:center;flex-wrap:wrap;justify-content:center}
+.strip{display:flex;border-radius:10px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.15)}
+.frame{width:74px;height:74px;background:linear-gradient(145deg,#fff,var(--card));display:flex;align-items:center;justify-content:center;
+  font-size:2.2rem;border-right:1px dashed #d8d2c6}
+.frame:last-child{border-right:none}
+.cutter{width:74px;height:74px;border:3px solid var(--coral);border-radius:10px;position:absolute;top:0;left:0;
+  box-shadow:0 0 0 2000px rgba(0,0,0,0);animation:cut 1.8s steps(6) infinite}
+@keyframes cut{to{transform:translateX(444px)}}
+.strip-holder{position:relative}
+.formula{background:#fff;border-radius:12px;padding:14px 22px;font-family:'Fira Code',monospace;font-size:clamp(.75rem,1.6vw,1.05rem);
+  color:var(--green);box-shadow:0 10px 26px rgba(0,0,0,.1)}
+.formula b{color:var(--coral)}
+.slider-sim{display:flex;gap:10px;align-items:center;background:#fff;padding:10px 18px;border-radius:10px;box-shadow:0 8px 20px rgba(0,0,0,.1);font-size:.8rem}
+input[type=range]{accent-color:var(--coral)}
+
+/* ---------- SCENE 6 cards ---------- */
+.agrid{display:grid;grid-template-columns:repeat(4,minmax(110px,150px));gap:14px;perspective:900px}
+.acard{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 8px 20px rgba(0,0,0,.1);cursor:pointer;transition:transform .35s,box-shadow .35s}
+.acard:hover{transform:translateY(-6px) rotateX(6deg);box-shadow:0 16px 34px rgba(0,0,0,.18)}
+.acard .pic{height:74px;display:flex;align-items:center;justify-content:center;font-size:2.1rem;background:linear-gradient(145deg,#f4f1ea,var(--card))}
+.acard .inf{padding:7px 9px}
+.acard .inf b{font-size:.8rem}
+.acard .inf small{display:block;font-size:.6rem;color:var(--coral)}
+.badge{position:absolute;top:5px;right:5px;font-size:.5rem;font-weight:700;color:#fff;border-radius:20px;padding:2px 7px}
+.b-disp{background:#2ecc71}.b-proc{background:var(--yellow);color:#333}.b-adop{background:#e74c3c}
+.acard{position:relative}
+.amodal{position:fixed;inset:0;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;z-index:80;padding:20px}
+.amodal.show{display:flex}
+.modal-card{background:#fff;border-radius:14px;max-width:640px;width:92%;display:grid;grid-template-columns:1fr 1.4fr;overflow:hidden;
+  animation:min .3s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes min{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
+.modal-card .mpic{background:linear-gradient(145deg,#f4f1ea,var(--card));display:flex;align-items:center;justify-content:center;font-size:4.5rem;min-height:240px}
+.modal-card .minf{padding:22px}
+.modal-card .minf h3{color:var(--green);font-size:1.5rem}
+.salud{background:var(--cream);border-left:4px solid var(--coral);border-radius:6px;padding:10px 14px;margin:12px 0;font-size:.75rem}
+.btn-coral{display:inline-block;background:var(--coral);color:#fff;text-decoration:none;padding:9px 18px;border-radius:8px;font-weight:600;font-size:.85rem}
+
+/* ---------- SCENE 7 constellation ---------- */
+.constel{position:relative;width:min(760px,86vw);height:min(420px,52vh)}
+.node{position:absolute;background:#fff;border-radius:14px;padding:10px 16px;text-align:center;box-shadow:0 10px 26px rgba(0,0,0,.12);
+  cursor:default;transition:transform .3s,box-shadow .3s;min-width:96px}
+.node:hover{transform:translateY(-6px) scale(1.06);box-shadow:0 16px 36px rgba(0,0,0,.2)}
+.node .ic{font-size:1.6rem}
+.node b{display:block;font-size:.68rem;color:var(--green);margin-top:2px}
+.node .tip{position:absolute;bottom:110%;left:50%;transform:translateX(-50%);background:var(--ide);color:#cdd3e0;
+  font-family:monospace;font-size:.6rem;padding:8px 10px;border-radius:8px;white-space:nowrap;opacity:0;pointer-events:none;transition:.3s}
+.node:hover .tip{opacity:1}
+.core{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:3.4rem;
+  filter:drop-shadow(0 6px 14px rgba(0,0,0,.25));animation:corepulse 2.4s ease-in-out infinite}
+@keyframes corepulse{50%{transform:translate(-50%,-50%) scale(1.12)}}
+svg.wires{position:absolute;inset:0;width:100%;height:100%}
+.scene.active .wires line{stroke-dasharray:400;stroke-dashoffset:400;animation:draw 1.6s ease forwards}
+.scene.active .wires line:nth-child(2){animation-delay:.2s}.scene.active .wires line:nth-child(3){animation-delay:.4s}
+.scene.active .wires line:nth-child(4){animation-delay:.6s}.scene.active .wires line:nth-child(5){animation-delay:.8s}
+.scene.active .wires line:nth-child(6){animation-delay:1s}.scene.active .wires line:nth-child(7){animation-delay:1.2s}
+@keyframes draw{to{stroke-dashoffset:0}}
+
+/* ---------- SCENE 8 form sim ---------- */
+.formsim{width:min(420px,80vw);background:#fff;border-radius:14px;box-shadow:0 18px 46px rgba(0,0,0,.16);padding:22px;position:relative}
+.fgroup{margin-bottom:12px}
+.fgroup label{font-size:.65rem;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:4px}
+.fgroup .field{border:1px solid #dcd6cd;border-radius:8px;padding:9px 12px;font-size:.85rem;min-height:37px;background:#fcfbfa;color:#333;font-family:monospace}
+.cursor{display:inline-block;width:2px;height:1em;background:var(--coral);vertical-align:-2px;animation:blink .7s steps(1) infinite}
+.wabubble{position:absolute;right:-30px;top:-40px;background:#dcf8c6;border-radius:12px 12px 12px 2px;padding:10px 14px;font-size:.72rem;
+  max-width:230px;box-shadow:0 10px 26px rgba(0,0,0,.18);opacity:0;transform:scale(.6) rotate(-6deg);transform-origin:bottom left}
+.scene.active .wabubble{animation:wain 1s cubic-bezier(.2,.9,.3,1.4) 3.4s both}
+@keyframes wain{to{opacity:1;transform:scale(1) rotate(0)}}
+.sendpulse{animation:spulse 1.6s ease-in-out 2.8s infinite}
+@keyframes spulse{50%{box-shadow:0 0 0 12px rgba(231,111,81,.25)}}
+
+/* ---------- SCENE 9 metrics ---------- */
+.metrics{display:flex;gap:clamp(14px,3vw,40px);flex-wrap:wrap;justify-content:center}
+.metric{background:#fff;border-radius:16px;padding:22px 30px;text-align:center;box-shadow:0 12px 30px rgba(0,0,0,.1);min-width:150px}
+.metric .num{font-size:clamp(2rem,4.5vw,3rem);font-weight:800;color:var(--green)}
+.metric .num.coral{color:var(--coral)}
+.metric small{color:#888;font-size:.7rem;text-transform:uppercase;letter-spacing:1px}
+.ba{position:relative;width:min(620px,84vw);height:min(300px,40vh);border-radius:14px;overflow:hidden;box-shadow:0 16px 40px rgba(0,0,0,.2);user-select:none}
+.ba .layer{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px}
+.ba .after{background:linear-gradient(135deg,#e8f0ea,#fff)}
+.ba .before{background:#d8d4cc;clip-path:inset(0 50% 0 0)}
+.ba .before::after{content:''}
+.ba-label{font-size:.7rem;font-weight:700;letter-spacing:1px;padding:4px 12px;border-radius:20px}
+.ba .divider{position:absolute;top:0;bottom:0;width:3px;background:var(--coral);left:50%;cursor:ew-resize;z-index:5}
+.ba .divider::after{content:'⇄';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--coral);color:#fff;
+  width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.9rem}
+
+/* ---------- SCENE 10 vertical journey ---------- */
+.journey{position:relative;width:min(420px,70vw);height:min(430px,56vh);overflow:hidden;border-radius:14px;
+  box-shadow:0 20px 50px rgba(0,0,0,.2);background:#fff}
+.journey-inner{position:absolute;left:0;width:100%;transition:none}
+.scene.active .journey-inner{animation:jscroll 14s ease-in-out .5s both}
+@keyframes jscroll{0%{top:0}100%{top:-320%}}
+.jsec{padding:16px;border-bottom:3px solid var(--cream);min-height:150px;transition:background 1s}
+.jsec h4{color:var(--green);font-size:.85rem;margin-bottom:4px}
+.jsec .kw{font-size:1.5rem;font-weight:800;color:var(--coral);opacity:0}
+.scene.active .jsec:nth-child(1) .kw{animation:kwIn .8s ease 1s both}
+.scene.active .jsec:nth-child(2) .kw{animation:kwIn .8s ease 4s both}
+.scene.active .jsec:nth-child(3) .kw{animation:kwIn .8s ease 7s both}
+.scene.active .jsec:nth-child(4) .kw{animation:kwIn .8s ease 10s both}
+@keyframes kwIn{from{opacity:0;transform:translateY(14px) rotate(-3deg)}to{opacity:1;transform:none}}
+.jbar{height:8px;background:var(--green);border-radius:4px;margin:6px 0}
+.jbar.c{background:var(--coral)}
+.jimg{height:60px;border-radius:8px;background:linear-gradient(135deg,#dfe8e0,#f4f1ea);display:flex;align-items:center;justify-content:center;font-size:1.6rem}
+
+/* ---------- SCENE 11 ---------- */
+.pillars{display:flex;gap:18px;flex-wrap:wrap;justify-content:center}
+.pillar{background:#fff;border-radius:16px;padding:24px;width:min(240px,80vw);box-shadow:0 12px 30px rgba(0,0,0,.1);text-align:center}
+.pillar .ic{font-size:2.4rem}
+.pillar h4{color:var(--green);margin:8px 0}
+.pillar p{font-size:.78rem;color:#666}
+.scene.active .pillar:nth-child(1){animation:fromL .8s cubic-bezier(.2,.9,.3,1.2) both}
+.scene.active .pillar:nth-child(2){animation:up .8s cubic-bezier(.2,.9,.3,1.2) .3s both}
+.scene.active .pillar:nth-child(3){animation:fromR .8s cubic-bezier(.2,.9,.3,1.2) .6s both}
+@keyframes fromL{from{opacity:0;transform:translateX(-90px)}to{opacity:1;transform:none}}
+@keyframes fromR{from{opacity:0;transform:translateX(90px)}to{opacity:1;transform:none}}
+.victory{margin-top:26px;background:var(--card);border-radius:14px;padding:16px 30px;display:flex;gap:18px;align-items:center;box-shadow:0 10px 26px rgba(0,0,0,.1)}
+.victory .heart{font-size:2rem;animation:heartbeat 1.2s ease infinite}
+@keyframes heartbeat{0%,100%{transform:scale(1)}25%{transform:scale(1.25)}45%{transform:scale(1)}}
+
+/* ---------- SCENE 12 ---------- */
+#sc12 .pawcloud span{position:absolute;font-size:1.4rem;opacity:.8;animation:converge 2.6s cubic-bezier(.5,0,.3,1) both}
+@keyframes converge{from{transform:translate(var(--sx),var(--sy)) scale(.4);opacity:0}60%{opacity:.9}to{transform:translate(0,0) scale(1);opacity:.9}}
+.qrbox{background:#fff;padding:14px;border-radius:14px;box-shadow:0 14px 36px rgba(0,0,0,.15)}
+.qr{display:grid;grid-template-columns:repeat(7,1fr);width:120px;height:120px;gap:0}
+.qr i{background:#222}
+.cta-btn{display:inline-block;background:var(--coral);color:#fff;font-weight:700;padding:14px 34px;border-radius:40px;text-decoration:none;
+  font-size:1.05rem;animation:spulse2 2s ease-in-out infinite;margin-top:14px}
+@keyframes spulse2{50%{box-shadow:0 0 0 14px rgba(231,111,81,.22)}}
+.logo-final{font-size:clamp(1.6rem,4vw,2.6rem);font-weight:800;color:var(--green)}
+
+@media (max-width:720px){
+  .agrid{grid-template-columns:repeat(2,1fr)}
+  .ide-body{grid-template-columns:1fr}
+  .modal-card{grid-template-columns:1fr}
+  .arrow{display:none}
+  .orbit-card{display:none}
+  .wabubble{right:0;top:-56px}
+}
+</style>
+<base target="_blank">
+</head>
+<body>
+
+<div class="progress" id="prog"></div>
+
+<!-- ══════════ SCENE 1 ══════════ -->
+<section class="scene paws-bg" id="sc1">
+  <span class="kicker anim-up">Presentación del proyecto</span>
+  <div class="track">
+    <span class="paw" style="animation-delay:.6s;top:28%;left:12%">🐾</span>
+    <span class="paw" style="animation-delay:1.4s;top:32%;left:30%">🐾</span>
+    <span class="paw" style="animation-delay:2.2s;top:26%;left:48%">🐾</span>
+    <span class="paw" style="animation-delay:3s;top:33%;left:66%">🐾</span>
+    <span class="paw" style="animation-delay:3.8s;top:27%;left:84%">🐾</span>
+    <span class="walker">🐕</span>
+  </div>
+  <h1 class="big type" style="text-align:center">"Un hogar cambia toda una vida"</h1>
+  <p class="sub anim-up d4">🐾 Patitas Felices · Plataforma de adopción responsable</p>
+</section>
+
+<!-- ══════════ SCENE 2 ══════════ -->
+<section class="scene paws-bg" id="sc2">
+  <span class="kicker anim-up">Escena 02 · El proyecto</span>
+  <h1 class="big anim-up d1">Nace <span class="hl">Patitas Felices</span></h1>
+  <div style="position:relative;margin-top:3vh">
+    <div class="dev desktop anim-up d2">
+      <div class="dev-bar"><i></i><i></i><i></i></div>
+      <div class="dev-screen">
+        <div class="mini-hero">
+          <span class="tag">RESCATAR · CUIDAR · ENCONTRAR HOGAR</span>
+          <b>Un hogar cambia toda una vida</b>
+          <span class="btn">Adopta aquí →</span>
+        </div>
+        <div class="mini-grid m4">
+          <div class="petcard"><div class="emo">🐶</div>Rocky<span>Disponible</span></div>
+          <div class="petcard"><div class="emo">🐱</div>Luna<span>Disponible</span></div>
+          <div class="petcard"><div class="emo">🐱</div>Oliver<span>En proceso</span></div>
+          <div class="petcard"><div class="emo">🐶</div>Bruno<span>Disponible</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="orbit-card" style="top:-24px;left:-70px;animation-delay:.5s">🏠 Inicio</div>
+    <div class="orbit-card" style="top:-30px;right:-60px;animation-delay:.8s">🫶 Misión</div>
+    <div class="orbit-card" style="bottom:-22px;left:-50px;animation-delay:1.1s">🐾 Adopta</div>
+    <div class="orbit-card" style="bottom:-26px;right:-70px;animation-delay:1.4s">✉️ Contacto</div>
+  </div>
+  <p class="sub anim-up d5">Plataforma web de adopción — HTML + CSS puro, sin frameworks</p>
+</section>
+
+<!-- ══════════ SCENE 3 ══════════ -->
+<section class="scene" id="sc3">
+  <span class="kicker anim-up">Escena 03 · Responsive</span>
+  <h1 class="big anim-up d1">Del <span class="hl">escritorio</span> al bolsillo</h1>
+  <div class="morph-stage anim-up d2">
+    <div class="laser"></div>
+    <div class="morphbox" id="morphbox">
+      <div class="dev-bar"><i></i><i></i><i></i></div>
+      <div class="dev-screen">
+        <div class="mini-hero" style="padding:8px">
+          <span class="tag">RESCATAR · CUIDAR</span>
+          <b style="font-size:.7rem">Un hogar cambia toda una vida</b>
+        </div>
+        <div class="mini-grid m4" id="reflowGrid">
+          <div class="petcard"><div class="emo">🐶</div></div>
+          <div class="petcard"><div class="emo">🐱</div></div>
+          <div class="petcard"><div class="emo">🐱</div></div>
+          <div class="petcard"><div class="emo">🐶</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="sub anim-up d4">100% Responsive — la rejilla se redibuja: 4 → 2 → 1 columnas</p>
+  <div class="anim-up d5" style="margin-top:1vh">
+    <span style="background:var(--ide);color:#c3e88d;font-family:monospace;font-size:.68rem;padding:8px 16px;border-radius:8px">
+      @media (max-width: 992px) { .grid-animales { grid-template-columns: repeat(2,1fr) } }
+    </span>
+  </div>
+</section>
+
+<!-- ══════════ SCENE 4 ══════════ -->
+<section class="scene" id="sc4" style="background:#262735">
+  <span class="kicker anim-up" style="color:#f1c40f">Escena 04 · El corazón del código</span>
+  <h1 class="big anim-up d1" style="color:#fff">CSS es el nuevo <span style="color:#f78c6c">After Effects</span></h1>
+  <div class="ide anim-up d2">
+    <div class="ide-head"><i style="background:#ff5f57"></i><i style="background:#febc2e"></i><i style="background:#28c840"></i>&nbsp;styles.css — carrusel</div>
+    <div class="ide-body">
+      <div style="overflow:hidden"><code class="code-typer"><span class="tok-c">/* Carrusel: 3 imágenes, 0 JavaScript */</span>
+<span class="tok-k">@keyframes</span> <span class="tok-p">bannerAnimation</span> {
+  <span class="tok-n">0%</span>   { <span class="tok-p">opacity</span>: <span class="tok-n">0</span>; }
+  <span class="tok-n">10%</span>  { <span class="tok-p">opacity</span>: <span class="tok-n">1</span>; }
+  <span class="tok-n">33%</span>  { <span class="tok-p">opacity</span>: <span class="tok-n">1</span>; }
+  <span class="tok-n">43%</span>  { <span class="tok-p">opacity</span>: <span class="tok-n">0</span>; }
+  <span class="tok-n">100%</span> { <span class="tok-p">opacity</span>: <span class="tok-n">0</span>; }
+}
+<span class="tok-p">.imagen2</span> { <span class="tok-p">animation-delay</span>: <span class="tok-n">3s</span>; }
+<span class="tok-p">.imagen3</span> { <span class="tok-p">animation-delay</span>: <span class="tok-n">6s</span>; }</code></div>
+      <div class="ide-preview">
+        <div class="preview-frame">
+          <div class="pv pv1" style="background:linear-gradient(135deg,#ffd9c2,#ffe9dd)">🐱</div>
+          <div class="pv pv2" style="background:linear-gradient(135deg,#d3e4d6,#eaf3ec)">🐶</div>
+          <div class="pv pv3" style="background:linear-gradient(135deg,#f7e8c9,#fdf3dd)">🐕</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <p class="sub anim-up d4" style="color:#aab">Tres imágenes · Cero JavaScript · Puro <b style="color:#c3e88d">@keyframes</b></p>
+</section>
+
+<!-- ══════════ SCENE 5 ══════════ -->
+<section class="scene paws-bg" id="sc5">
+  <span class="kicker anim-up">Escena 05 · Pieza insignia</span>
+  <h1 class="big anim-up d1">Un perrito hecho de <span class="hl">matemáticas</span></h1>
+  <div class="strip-wrap anim-up d2" style="margin:2vh 0">
+    <div class="strip-holder">
+      <div class="strip">
+        <div class="frame">🐕</div><div class="frame">🐕‍🦺</div><div class="frame">🐕</div>
+        <div class="frame">🐕‍🦺</div><div class="frame">🐕</div><div class="frame">🐕‍🦺</div>
+      </div>
+      <div class="cutter"></div>
+    </div>
+    <div class="formula anim-up d3">W<sub>total</sub> = W<sub>frame</sub> × N<br><b>667px ≈ 111.16px × 6</b></div>
+  </div>
+  <div class="slider-sim anim-up d4">
+    ⏱ Velocidad del sprite <input type="range" id="speedRange" min="2" max="20" value="10" style="width:140px">
+    <span id="speedLbl" style="font-family:monospace;color:var(--coral);font-weight:700">0.6s · steps(6)</span>
+  </div>
+  <p class="sub anim-up d5">Cinematografía de 6 fotogramas en 0.6 segundos — <code style="background:var(--ide);color:#c3e88d;padding:2px 8px;border-radius:6px">steps(6)</code></p>
+</section>
+
+<!-- ══════════ SCENE 6 ══════════ -->
+<section class="scene paws-bg" id="sc6">
+  <span class="kicker anim-up">Escena 06 · El catálogo</span>
+  <h1 class="big anim-up d1">8 historias <span class="hl">esperando hogar</span></h1>
+  <div class="agrid anim-up d2" id="agrid" style="margin:2.5vh 0"></div>
+  <p class="sub anim-up d4">👆 Haz clic en cualquier tarjeta — el modal es puro CSS (<code>:target</code>), cero JS</p>
+</section>
+<div class="amodal" id="amodal">
+  <div class="modal-card">
+    <div class="mpic" id="mPic">🐶</div>
+    <div class="minf">
+      <h3 id="mName">Rocky</h3>
+      <small id="mBreed" style="color:var(--coral);font-weight:600">Corgi mestizo · 4 meses</small>
+      <p id="mStory" style="font-size:.82rem;margin-top:8px;color:#444"></p>
+      <div class="salud"><b style="font-size:.75rem">✚ Estado médico</b><div id="mHealth" style="margin-top:4px"></div></div>
+      <a class="btn-coral" href="#" onclick="closeModal();return false;">Quiero adoptar 💚</a>
+      <a href="#" onclick="closeModal();return false;" style="margin-left:10px;color:#999;font-size:.8rem">Cerrar ✕</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ SCENE 7 ══════════ -->
+<section class="scene" id="sc7" style="background:linear-gradient(160deg,#22302a,#2c3e35)">
+  <span class="kicker anim-up" style="color:#f1c40f">Escena 07 · Stack tecnológico</span>
+  <h1 class="big anim-up d1" style="color:#fff">El arsenal: <span style="color:#f78c6c">mínimo, puro y poderoso</span></h1>
+  <div class="constel anim-up d2">
+    <svg class="wires" viewBox="0 0 760 420" preserveAspectRatio="none">
+      <line x1="380" y1="210" x2="120" y2="80"  stroke="#E76F51" stroke-width="2" opacity=".6"/>
+      <line x1="380" y1="210" x2="640" y2="70"  stroke="#E76F51" stroke-width="2" opacity=".6"/>
+      <line x1="380" y1="210" x2="90"  y2="330" stroke="#E76F51" stroke-width="2" opacity=".6"/>
+      <line x1="380" y1="210" x2="650" y2="330" stroke="#E76F51" stroke-width="2" opacity=".6"/>
+      <line x1="380" y1="210" x2="250" y2="40"  stroke="#E76F51" stroke-width="2" opacity=".6"/>
+      <line x1="380" y1="210" x2="520" y2="380" stroke="#E76F51" stroke-width="2" opacity=".6"/>
+      <line x1="380" y1="210" x2="500" y2="45"  stroke="#E76F51" stroke-width="2" opacity=".6"/>
+    </svg>
+    <div class="core">🐾</div>
+    <div class="node" style="left:60px;top:45px"><div class="ic">🧱</div><b>HTML5</b><div class="tip">&lt;section id="catalogo"&gt;…</div></div>
+    <div class="node" style="left:580px;top:35px"><div class="ic">🎨</div><b>CSS3 Grid</b><div class="tip">grid-template-columns: repeat(4,1fr)</div></div>
+    <div class="node" style="left:30px;top:295px"><div class="ic">🎬</div><b>Keyframes</b><div class="tip">animation: perrito .6s steps(6)</div></div>
+    <div class="node" style="left:590px;top:295px"><div class="ic">📱</div><b>Media Queries</b><div class="tip">@media (max-width: 576px)</div></div>
+    <div class="node" style="left:195px;top:5px"><div class="ic">▲</div><b>Vercel</b><div class="tip">proyecto-html-mu.vercel.app</div></div>
+    <div class="node" style="left:455px;top:345px"><div class="ic">💬</div><b>WhatsApp API</b><div class="tip">action="https://wa.me/57304…"</div></div>
+    <div class="node" style="left:445px;top:8px"><div class="ic">🖼️</div><b>Figma</b><div class="tip">Wireframe → producción</div></div>
+  </div>
+  <p class="sub anim-up d4" style="color:#aab">Sin frameworks · Sin librerías · 100% vanilla — y aún así, animado ✨</p>
+</section>
+
+<!-- ══════════ SCENE 8 ══════════ -->
+<section class="scene paws-bg" id="sc8">
+  <span class="kicker anim-up">Escena 08 · Formulario con vida real</span>
+  <h1 class="big anim-up d1">Del formulario al <span class="hl">WhatsApp</span> en 1 clic</h1>
+  <div class="formsim anim-up d2" style="margin-top:2.5vh">
+    <div class="wabubble">💬 <b>WhatsApp:</b> "¡Hola! He completado el formulario de contacto en Patitas Felices…"</div>
+    <div class="fgroup"><label>Nombre *</label><div class="field" id="fName"><span class="cursor"></span></div></div>
+    <div class="fgroup"><label>Ciudad *</label><div class="field" id="fCity"></div></div>
+    <div class="fgroup"><label>Motivo de consulta *</label><div class="field" id="fMotive">General ▾</div></div>
+    <div class="fgroup"><label>✓ Privacidad</label><div class="field" id="fCheck" style="color:#2ecc71"></div></div>
+    <button class="btn-coral sendpulse" style="border:none;width:100%;font-size:.95rem">Enviar mensaje →</button>
+  </div>
+  <p class="sub anim-up d5">Cero backend — el formulario conversa directo con WhatsApp</p>
+</section>
+
+<!-- ══════════ SCENE 9 ══════════ -->
+<section class="scene" id="sc9">
+  <span class="kicker anim-up">Escena 09 · Factor WOW</span>
+  <h1 class="big anim-up d1">El impacto en <span class="hl">números vivos</span></h1>
+  <div class="metrics anim-up d2" style="margin:2.5vh 0">
+    <div class="metric"><div class="num" data-count="8">0</div><small>Perfiles creados</small></div>
+    <div class="metric"><div class="num coral" data-count="40">0</div><small>Reglas CSS +</small></div>
+    <div class="metric"><div class="num" data-count="0">0</div><small>Líneas de JavaScript</small></div>
+    <div class="metric"><div class="num coral" data-count="100" data-suffix="%">0</div><small>Responsive</small></div>
+  </div>
+  <div class="ba anim-up d4" id="ba">
+    <div class="layer after">
+      <span class="ba-label" style="background:var(--green);color:#fff">DESPUÉS · Sitio final</span>
+      <div style="font-size:3rem">🐕🌈</div>
+      <small style="color:#666">Color · vida · animaciones</small>
+    </div>
+    <div class="layer before">
+      <span class="ba-label" style="background:#999;color:#fff">ANTES · Wireframe Figma</span>
+      <div style="font-size:3rem;filter:grayscale(1);opacity:.6">🐕📐</div>
+      <small style="color:#777">Gris · estructura · layout</small>
+    </div>
+    <div class="divider" id="baDiv"></div>
+  </div>
+  <p class="sub anim-up d5">👆 Arrastra el divisor — comparativa interactiva wireframe → producción</p>
+</section>
+
+<!-- ══════════ SCENE 10 ══════════ -->
+<section class="scene" id="sc10" style="background:linear-gradient(180deg,#eef2ee,#e3eae4)">
+  <span class="kicker anim-up">Escena 10 · Recorrido inmersivo</span>
+  <h1 class="big anim-up d1">Baja conmigo por la <span class="hl">página</span></h1>
+  <div class="journey anim-up d2" style="margin-top:2vh">
+    <div class="journey-inner">
+      <div class="jsec"><h4>🏠 Hero</h4><div class="jimg">🐕💚</div><div class="kw">EMOCIONA</div></div>
+      <div class="jsec"><h4>🫶 Misión y Visión</h4><div class="jbar"></div><div class="jbar" style="width:70%"></div><div class="kw">CONECTA</div></div>
+      <div class="jsec"><h4>🐾 Catálogo</h4>
+        <div class="mini-grid m2" style="margin-bottom:6px">
+          <div class="petcard"><div class="emo">🐶</div></div><div class="petcard"><div class="emo">🐱</div></div>
+        </div><div class="kw">CONVENCE</div></div>
+      <div class="jsec"><h4>✉️ Contacto</h4><div class="jbar c"></div><div class="jbar c" style="width:55%"></div><div class="kw">CONVIERTE</div></div>
+    </div>
+  </div>
+  <p class="sub anim-up d4">Kinetic typography: cada sección se ilumina con su palabra clave 🔦</p>
+</section>
+
+<!-- ══════════ SCENE 11 ══════════ -->
+<section class="scene paws-bg" id="sc11">
+  <span class="kicker anim-up">Escena 11 · Diseño con propósito</span>
+  <h1 class="big anim-up d1">Cada decisión <span class="hl">salva una patita</span></h1>
+  <div class="pillars anim-up d2" style="margin-top:2.5vh">
+    <div class="pillar"><div class="ic">🎨</div><h4>Color</h4><p>Paleta cálida verde+coral → transmite confianza, hogar y calidez, no frialdad tech.</p></div>
+    <div class="pillar"><div class="ic">🎬</div><h4>Movimiento</h4><p>Animaciones suaves con easing natural → simulan ternura: cada hover acaricia.</p></div>
+    <div class="pillar"><div class="ic">📖</div><h4>Contenido</h4><p>Historias reales con estado médico → transparencia que convierte visitas en adopciones.</p></div>
+  </div>
+  <div class="victory anim-up d4">
+    <span class="heart">❤️</span>
+    <div><b>Simba — badge 🔴 Adoptado</b><br><small style="color:#666">De pelaje enredado a hogar pleno. <b style="color:var(--coral)">1 de 8 ya tiene hogar. ¿Siguiente?</b></small></div>
+  </div>
+</section>
+
+<!-- ══════════ SCENE 12 ══════════ -->
+<section class="scene" id="sc12" style="background:linear-gradient(160deg,var(--green),#37523e)">
+  <div class="pawcloud" id="pawcloud" style="position:absolute;inset:0;pointer-events:none"></div>
+  <div style="position:relative;z-index:2;display:flex;flex-direction:column;align-items:center">
+    <span class="kicker anim-up" style="color:#ffd9c2">Escena 12 · Tu turno</span>
+    <h1 class="logo-final anim-up d1" style="color:#fff;text-shadow:0 4px 20px rgba(0,0,0,.3)">🐾 Patitas Felices</h1>
+    <p class="sub anim-up d2" style="color:#e8f0ea">Pequeñas patitas. Grandes comienzos.</p>
+    <div class="anim-up d3" style="display:flex;gap:26px;align-items:center;margin-top:3vh;flex-wrap:wrap;justify-content:center">
+      <div class="qrbox">
+        <div class="qr" id="qr"></div>
+        <div style="text-align:center;font-size:.62rem;color:#888;margin-top:8px">proyecto-html-mu.vercel.app</div>
+      </div>
+      <div style="color:#fff">
+        <a class="cta-btn" href="https://proyecto-html-mu.vercel.app/" target="_blank">Adopta aquí →</a>
+        <div style="margin-top:12px;font-size:.85rem">📸 @_patitas.felices · 📘 /patitasfelices.pequeñitos</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<button class="arrow" id="prev">‹</button>
+<button class="arrow" id="next">›</button>
+<div id="dots"></div>
+<div id="counter">1 / 12</div>
+
+<script>
+const scenes=[...document.querySelectorAll('.scene')];
+let cur=0;
+const dots=document.getElementById('dots');
+scenes.forEach((_,i)=>{const b=document.createElement('button');b.onclick=()=>go(i);dots.appendChild(b)});
+function go(n){
+  scenes[cur].classList.remove('active');
+  cur=(n+scenes.length)%scenes.length;
+  const s=scenes[cur];s.classList.remove('active');void s.offsetWidth;s.classList.add('active');
+  [...dots.children].forEach((d,i)=>d.classList.toggle('on',i===cur));
+  document.getElementById('counter').textContent=(cur+1)+' / '+scenes.length;
+  document.getElementById('prog').style.width=((cur+1)/scenes.length*100)+'%';
+  if(s.id==='sc3')setTimeout(()=>document.getElementById('morphbox').classList.add('toMobile'),1600);
+  else document.getElementById('morphbox').classList.remove('toMobile');
+  if(s.id==='sc8')runFormSim();
+  if(s.id==='sc9')runCounters();
+}
+document.getElementById('next').onclick=()=>go(cur+1);
+document.getElementById('prev').onclick=()=>go(cur-1);
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowRight'||e.key===' ')go(cur+1);
+  if(e.key==='ArrowLeft')go(cur-1);
+  if(e.key==='Escape')closeModal();
+});
+let tx0=null;
+document.addEventListener('touchstart',e=>tx0=e.touches[0].clientX);
+document.addEventListener('touchend',e=>{if(tx0===null)return;const dx=e.changedTouches[0].clientX-tx0;
+  if(Math.abs(dx)>50)go(cur+(dx<0?1:-1));tx0=null});
+
+/* ── Scene 5 speed slider ── */
+const sr=document.getElementById('speedRange');
+sr.addEventListener('input',()=>{
+  const dur=(sr.value/10*0.6).toFixed(2);
+  document.querySelector('.cutter').style.animationDuration=dur+'s';
+  document.getElementById('speedLbl').textContent=dur+'s · steps(6)';
+});
+
+/* ── Scene 6 animals ── */
+const pets=[
+ {n:'Rocky',e:'🐶',b:'Corgi mestizo · 4 meses',s:'d',h:['Vacunas parvovirus y séxtuple ✓','Desparasitado ✓'],
+  t:'Encontrado en una caja cerca de un parque. Cariñoso, curioso y con orejitas siempre alerta.'},
+ {n:'Luna',e:'🐱',b:'Atigrada · 6 meses',s:'d',h:['Triple felina ✓','Test leucemia/VIF negativo ✓'],
+  t:'Rescatada de un tejado en una noche de lluvia. Ronronea al menor contacto.'},
+ {n:'Oliver',e:'🐱',b:'Mestizo atigrado · 2 meses',s:'p',h:['Primera dosis felina ✓','Desparasitación completa ✓'],
+  t:'Dormilón, tierno y amante de los rincones cálidos. Una familia está en proceso de entrevista.'},
+ {n:'Bella',e:'🐱',b:'Calicó · 4 meses',s:'d',h:['Vacunas al día ✓','Microchip colocado ✓'],
+  t:'Elegante y sociable. Le encanta dormir cerca de sus cuidadores.'},
+ {n:'Bruno',e:'🐕',b:'Border Collie mix · 2 años',s:'d',h:['Castrado ✓','Antirrábica y séxtuple ✓'],
+  t:'Noble, dulce y muy cariñoso. Requiere paseos diarios y familia activa.'},
+ {n:'Simba',e:'🐈',b:'Bosque de Noruega mix · 2 años',s:'a',h:['Esterilizado + Microchip ✓','VIF/FelV negativo ✓'],
+  t:'Recuperó todo su esplendor tras meses de rehabilitación. ¡Ya encontró hogar! ❤️'},
+ {n:'Toby',e:'🦮',b:'Pastor mestizo · 3 años',s:'p',h:['Cirugía de cadera 100% ✓','Castrado ✓'],
+  t:'Sobrevivió un atropello y se recuperó por completo. Sociable con niños y animales.'},
+ {n:'Milo',e:'🐕‍🦺',b:'Labrador mestizo · 3 meses',s:'d',h:['Vacunas de cachorro ✓','Desparasitado ✓'],
+  t:'Juguetón, adora correr por el pasto. Ideal para familias con patio.'}
+];
+const badge={d:['Disponible','b-disp'],p:['En proceso','b-proc'],a:['Adoptado','b-adop']};
+const ag=document.getElementById('agrid');
+pets.forEach((p,i)=>{
+  const c=document.createElement('div');c.className='acard anim-up';c.style.animationDelay=(0.15+i*0.12)+'s';
+  c.innerHTML=`<span class="badge ${badge[p.s][1]}">${badge[p.s][0]}</span><div class="pic">${p.e}</div>
+    <div class="inf"><b>${p.n}</b><small>${p.b}</small></div>`;
+  c.onclick=()=>openModal(i);ag.appendChild(c);
+});
+function openModal(i){const p=pets[i];
+  document.getElementById('mPic').textContent=p.e;
+  document.getElementById('mName').textContent=p.n;
+  document.getElementById('mBreed').textContent=p.b;
+  document.getElementById('mStory').textContent=p.t;
+  document.getElementById('mHealth').innerHTML=p.h.map(x=>`• ${x}`).join('<br>');
+  document.getElementById('amodal').classList.add('show');
+}
+function closeModal(){document.getElementById('amodal').classList.remove('show')}
+document.getElementById('amodal').addEventListener('click',e=>{if(e.target.id==='amodal')closeModal()});
+
+/* ── Scene 8 form autofill ── */
+function typeInto(el,text,speed,done){
+  el.innerHTML='<span class="cursor"></span>';let i=0;
+  const t=setInterval(()=>{if(i>=text.length){clearInterval(t);done&&done();return}
+    el.innerHTML=text.slice(0,++i)+'<span class="cursor"></span>'},speed);
+}
+function runFormSim(){
+  const n=document.getElementById('fName');n.innerHTML='<span class="cursor"></span>';
+  document.getElementById('fCity').textContent='';document.getElementById('fCheck').textContent='';
+  document.getElementById('fMotive').textContent='General ▾';
+  setTimeout(()=>typeInto(n,'María Fernanda',55,()=>{
+    setTimeout(()=>typeInto(document.getElementById('fCity'),'Bogotá, Colombia',55,()=>{
+      setTimeout(()=>{document.getElementById('fMotive').innerHTML='🐾 <b style="color:var(--green)">Adopción</b>';
+        setTimeout(()=>{document.getElementById('fCheck').textContent='✓ Acepto la política de privacidad'},600);
+      },500);
+    }),400);
+  }),500);
+}
+
+/* ── Scene 9 counters ── */
+function runCounters(){
+  document.querySelectorAll('.metric .num').forEach(el=>{
+    const target=+el.dataset.count,suf=el.dataset.suffix||'';
+    const t0=performance.now(),dur=1400;
+    (function step(t){const p=Math.min((t-t0)/dur,1);
+      el.textContent=Math.round(target*(1-Math.pow(1-p,3)))+suf;
+      if(p<1)requestAnimationFrame(step)})(t0);
+  });
+}
+
+/* ── Scene 9 before/after slider ── */
+const ba=document.getElementById('ba'),baDiv=document.getElementById('baDiv');
+function baMove(clientX){
+  const r=ba.getBoundingClientRect();let p=Math.min(Math.max((clientX-r.left)/r.width,0.05),0.95);
+  baDiv.style.left=(p*100)+'%';
+  ba.querySelector('.before').style.clipPath=`inset(0 ${(1-p)*100}% 0 0)`;
+}
+baDiv.addEventListener('pointerdown',e=>{baDiv.setPointerCapture(e.pointerId);
+  const mv=ev=>baMove(ev.clientX);
+  baDiv.addEventListener('pointermove',mv);
+  baDiv.addEventListener('pointerup',()=>baDiv.removeEventListener('pointermove',mv),{once:true});
+});
+ba.addEventListener('click',e=>{if(e.target!==baDiv)baMove(e.clientX)});
+
+/* ── Scene 10 reflow demo inside morph ── */
+setInterval(()=>{
+  if(!scenes[2].classList.contains('active'))return;
+  const g=document.getElementById('reflowGrid');const mb=document.getElementById('morphbox');
+  g.className='mini-grid '+(mb.classList.contains('toMobile')?'m1':'m4');
+},400);
+
+/* ── Scene 12 paw convergence + QR ── */
+(function(){
+  const cloud=document.getElementById('pawcloud');
+  for(let i=0;i<26;i++){
+    const s=document.createElement('span');s.textContent='🐾';
+    const ang=(i/26)*Math.PI*2;
+    s.style.setProperty('--sx',Math.cos(ang)*(30+Math.random()*38)+'vw');
+    s.style.setProperty('--sy',Math.sin(ang)*(28+Math.random()*32)+'vh');
+    s.style.left=(46+Math.random()*8)+'%';s.style.top=(46+Math.random()*8)+'%';
+    s.style.animationDelay=(0.2+i*0.05)+'s';
+    cloud.appendChild(s);
+  }
+  const qr=document.getElementById('qr');
+  const finder=(x,y)=>{for(let dy=0;dy<3;dy++)for(let dx=0;dx<3;dx++){
+    const edge=(dx===0||dx===2||dy===0||dy===2);
+    if(edge){const c=document.createElement('i');c.style.gridArea=(y+dy)+'/'+(x+dx);qr.appendChild(c)}
+  }};
+  finder(1,1);finder(5,1);finder(1,5);
+  let seed=7;const rnd=()=>{seed=(seed*9301+49297)%233280;return seed/233280};
+  for(let r=1;r<=7;r++)for(let c=1;c<=7;c++){
+    const inF=(r<=3&&c<=3)||(r<=3&&c>=5)||(r>=5&&c<=3);if(inF)continue;
+    if(rnd()>0.55){const i=document.createElement('i');i.style.gridArea=r+'/'+c;qr.appendChild(i)}
+  }
+})();
+
+go(0);
+</script>
+</body>
+</html>
